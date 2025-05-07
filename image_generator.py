@@ -1,10 +1,11 @@
 import pygame, random
+from Vector2 import Vec
 from UIpygame import PyUI as pyui
 
 pygame.init()
 screenw = 1200
 screenh = 1200
-screen = pygame.display.set_mode((screenw, screenh), pygame.RESIZABLE)
+screen = pygame.display.set_mode((screenw+420, screenh), pygame.RESIZABLE)
 ui = pyui.UI()
 done = False
 clock = pygame.time.Clock()
@@ -79,7 +80,7 @@ class Generator:
         col = pixel.col
         count = 0
         while col_to_int(col) in self.used_colours:
-            col = self.randomize_col(col, (pos[0]+pos[1]-pixel.x-pixel.y)*1)
+            col = self.randomize_col(col, self.pos_to_random_val(pos,pixel))
             count += 1
             if count > Generator.search_limit:
                 return 0
@@ -103,9 +104,12 @@ class Generator:
         offset = 5
         return pygame.Color(
             random_num(col[0]-val, offset, offset, 0, 255),
-            random_num(col[1]+val, offset, offset, 0, 255),
-            random_num(col[2], offset, offset, 0, 255))
+            random_num(col[1], offset, offset, 0, 255),
+            random_num(col[2]+val, offset, offset, 0, 255))
 
+    def pos_to_random_val(self, pos, pixel):
+        offset = Vec(pos[0],pos[1])-Vec(600,600)
+        return sum(Vec.make_from_angle(offset.angle()+offset.length()/100,1.5).tuple(True))
 
 random.seed(1)
 gen = Generator()
@@ -118,6 +122,9 @@ while not done:
     ui.rendergui(screen)
 
     screen.blit(gen.surface,(0,0))
+    screen.blit(pygame.transform.scale(gen.surface,(400,400)),(screenw+10,10))
+    screen.blit(pygame.transform.scale(gen.surface, (100, 100)), (screenw + 160, 420))
+    screen.blit(pygame.transform.scale(gen.surface, (40, 40)), (screenw + 190, 530))
     gen.tick()
 
     pygame.display.flip()
