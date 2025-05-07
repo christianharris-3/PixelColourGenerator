@@ -79,7 +79,7 @@ class Generator:
         col = pixel.col
         count = 0
         while col_to_int(col) in self.used_colours:
-            col = self.randomize_col(col)
+            col = self.randomize_col(col, (pos[0]+pos[1]-pixel.x-pixel.y)*1)
             count += 1
             if count > Generator.search_limit:
                 return 0
@@ -99,11 +99,12 @@ class Generator:
 
     def randomize_pos(self, x, y):
         return random_num(x, 1, 1, 0, screenw), random_num(y, 1, 1, 0, screenh)
-    def randomize_col(self, col):
+    def randomize_col(self, col, val):
+        offset = 5
         return pygame.Color(
-            random_num(col[0], 5, 5, 0, 255),
-            random_num(col[1], 5, 5, 0, 255),
-            random_num(col[2], 5, 5, 0, 255))
+            random_num(col[0]-val, offset, offset, 0, 255),
+            random_num(col[1]+val, offset, offset, 0, 255),
+            random_num(col[2], offset, offset, 0, 255))
 
 
 random.seed(1)
