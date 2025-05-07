@@ -3,20 +3,23 @@ from Vector2 import Vec
 from UIpygame import PyUI as pyui
 
 pygame.init()
-screenw = 1200
-screenh = 1200
+screenw = 600
+screenh = 600
 screen = pygame.display.set_mode((screenw+420, screenh), pygame.RESIZABLE)
 ui = pyui.UI()
 done = False
 clock = pygame.time.Clock()
 
-def col_to_int(col : pygame.Color):
+def col_to_int(color):
+    col = [c//2 for c in color]
     return 255*255*col[0] + 255*col[1] + col[2]
 def pos_to_int(x, y):
     return x*screenh+y
 def random_num(num, above, below, min_, max_):
     val = random.randint(num-above,num+below)
     return max(min(val, max_), min_)
+
+# def draw_chaos_line(start, end, )
 
 class Pixel:
     def __init__(self, col, x, y, children):
@@ -39,9 +42,16 @@ class Generator:
         self.finished = False
         self.surface = pygame.Surface((screenw, screenh))
 
-        initial_pixel = Pixel(pygame.Color(130,130,130), 600, 600, Generator.spread_index)
-        self.active_pixels.append(initial_pixel)
-        self.add_pixel(initial_pixel)
+        start_pixels = [self.random_pixel()
+            # Pixel(pygame.Color(255, 0, 130), 100, 100, Generator.spread_index),
+            # Pixel(pygame.Color(130, 250, 0), 500, 100, Generator.spread_index),
+            # Pixel(pygame.Color(0, 130, 250), 100, 500, Generator.spread_index),
+            # Pixel(pygame.Color(250, 0, 0), 500, 500, Generator.spread_index)
+            ]
+
+        for pixel in start_pixels:
+            self.active_pixels.append(pixel)
+            self.add_pixel(pixel)
 
     def tick(self):
         if len(self.active_pixels) > 0:
@@ -52,6 +62,10 @@ class Generator:
             pygame.image.save(self.surface, f"image_output_{temp.randint(100,999)}.png")
 
     def complete_pass(self):
+
+        if random.randint(0,40) == 22:
+            self.active_pixels.append(self.random_pixel())
+
         del_list = []
         new_pixels = []
         for pixel in self.active_pixels:
@@ -86,6 +100,13 @@ class Generator:
                 return 0
         return Pixel(col, pos[0], pos[1], Generator.spread_index)
 
+    def random_pixel(self):
+        pos = (random.randint(0,screenw), random.randint(0,screenh))
+        while pos_to_int(*pos) in self.used_positions:
+            pos = (random.randint(0, screenw), random.randint(0, screenh))
+        return Pixel(pygame.Color([random.randint(0,255) for a in range(3)]),
+                     pos[0], pos[1], Generator.spread_index)
+
     def add_pixel(self, pixel):
         self.used_colours.add(col_to_int(pixel.col))
         self.used_positions.add(pos_to_int(pixel.x, pixel.y))
@@ -109,7 +130,7 @@ class Generator:
 
     def pos_to_random_val(self, pos, pixel):
         offset = Vec(pos[0],pos[1])-Vec(600,600)
-        return sum(Vec.make_from_angle(offset.angle()+offset.length()/100,1.5).tuple(True))
+        return sum(Vec.make_from_angle(offset.angle()+offset.length()/300,1.5).tuple(True))
 
 random.seed(1)
 gen = Generator()
