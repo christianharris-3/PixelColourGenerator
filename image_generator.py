@@ -19,6 +19,25 @@ def random_num(num, above, below, min_, max_):
     val = random.randint(num-above,num+below)
     return max(min(val, max_), min_)
 
+def check_in_face(pos,w,h):
+    x, y = pos[0]/w,1-pos[1]/h
+
+    # eye
+    if (x <= 0.64) and (y >= -x/2+0.975) and (2*y <= 0.8+x):
+        return False
+
+    # head circle
+    if ((x+0.5)**2+(y-0.6)**2 <= 1.175**2) and (y >= 0.3125-x/8):
+        return True
+    # neck
+    if (y >= 3*x-1.25) and (y <= 0.3125-x/8):
+        return True
+    # nose
+    if (y <= -4*x+3.35) and (y > -x/8+0.5625):
+        return True
+
+    return False
+
 # def draw_chaos_line(start, end, )
 
 class Pixel:
@@ -91,6 +110,8 @@ class Generator:
             count+=1
             if count > 20:
                 return 0
+        if not check_in_face(pos, screenw, screenh):
+            return 0
         col = pixel.col
         count = 0
         while col_to_int(col) in self.used_colours:

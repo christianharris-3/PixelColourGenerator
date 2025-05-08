@@ -40,11 +40,13 @@ while not done:
     screen.fill(pyui.Style.wallpapercol)
     ui.rendergui(screen)
 
-    center = Vec(600,600)
-    radius = 800
-    random.seed(2)
-    for a in range(100):
-        draw_chaos_line(screen, (a,0,255-a*2), center, center+Vec.make_from_angle(a/100*math.pi*2)*radius, lambda x: math.cos((x**power.slider)/divider.slider)*5, 2)
+    # center = Vec(600,600)
+    # radius = 800
+    # random.seed(2)
+    # for a in range(50):
+    #     draw_chaos_line(screen, (a,0,255-a*2), center+Vec.make_from_angle(a/50*math.pi*2+2.5)*80, center+Vec.make_from_angle(a/50*math.pi*2)*radius, lambda x: math.sin((x**power.slider)/divider.slider)*5, 2)
+
+    pygame.draw
 
     pygame.display.flip()
     clock.tick(60)
