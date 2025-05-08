@@ -1,4 +1,4 @@
-import pygame, random
+import pygame, random, os
 from Vector2 import Vec
 from UIpygame import PyUI as pyui
 
@@ -24,8 +24,8 @@ def check_in_face(pos,w,h):
     x+=0.1
 
     # eye
-    if (x <= 0.64) and (y >= -x/2+0.95) and (2*y <= 0.8+x):
-        return False
+    # if (x <= 0.63) and (y >= -x/2+0.95) and (2*y <= 0.8+x):
+    #     return False
 
     # head circle
     if ((x+0.5)**2+(y-0.6)**2 <= 1.175**2) and (y >= 0.3125-x/8):
@@ -39,6 +39,10 @@ def check_in_face(pos,w,h):
 
     return False
 
+def check_in_eye(pos, w, h):
+    x, y = pos[0] / w, 1 - pos[1] / h
+    return (x-0.466)**2+(y-0.680)**2<(0.05**2)
+
 # def draw_chaos_line(start, end, )
 
 class Pixel:
@@ -47,11 +51,16 @@ class Pixel:
         self.x = x
         self.y = y
         self.children = children
+        self.initial_children = children
         self.tag = tag
     def __str__(self):
         return f"<PIXEL x:{self.x} y:{self.y} col:{self.col}>"
     def __repr__(self):
         return self.__str__()
+    def get_child_children(self):
+        if self.initial_children == 2:
+            return 2
+        return self.initial_children-0.01
 
 class Generator:
     spread_index = 2
@@ -66,7 +75,7 @@ class Generator:
 
         start_pixels = [#self.random_pixel()
             # Pixel(pygame.Color(0, 0, 0), 660, 320, Generator.spread_index, True),
-            Pixel(pygame.Color(255, 255, 255), 530, 320, Generator.spread_index, False),
+            # Pixel(pygame.Color(255, 255, 255), 520, 320, 1.2, True),
             # Pixel(pygame.Color(255, 255, 255), 690, 320, Generator.spread_index, False),
             # Pixel(pygame.Color(0, 130, 250), 100, 500, Generator.spread_index),
             # Pixel(pygame.Color(250, 0, 0), 500, 500, Generator.spread_index)
@@ -106,8 +115,8 @@ class Generator:
             self.add_face()
             if len(self.active_pixels) == 0:
                 self.finished = True
-                temp = random.Random()
-                pygame.image.save(self.surface, f"images/image_output_{temp.randint(10000,99999)}.png")
+                files = os.listdir("images")
+                pygame.image.save(self.surface, f"images/image_num_{len(files)}.png")
 
     def complete_pass(self):
         # if random.randint(0,40) == 22:
@@ -122,6 +131,11 @@ class Generator:
                     self.add_pixel(new)
                     new_pixels.append(new)
                 pixel.children -= 1
+            if pixel.children < 1:
+                if random.random() < pixel.children:
+                    pixel.children = 1
+                else:
+                    pixel.children = 0
             if pixel.children == 0:
                 del_list.append(pixel)
         for pixel in del_list:
@@ -155,7 +169,7 @@ class Generator:
             count += 1
             if count > Generator.search_limit:
                 return 0
-        return Pixel(col, pos[0], pos[1], Generator.spread_index, pixel.tag)
+        return Pixel(col, pos[0], pos[1], pixel.get_child_children(), pixel.tag)
 
     def random_pixel(self):
         pos = (random.randint(0,screenw), random.randint(0,screenh))
@@ -195,6 +209,8 @@ class Generator:
 
 
     def pos_to_random_val(self, pos, pixel):
+        if check_in_eye(pos, screenw, screenh):
+            return 4
         if pixel.tag:
             return -1
             offset = Vec(pos[0], pos[1]) - Vec(300, 300)
