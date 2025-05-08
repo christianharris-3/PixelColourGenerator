@@ -11,7 +11,7 @@ done = False
 clock = pygame.time.Clock()
 
 def col_to_int(col):
-    # col = [c//2 for c in color]
+    # col = [c//2 for c in col]
     return 255*255*col[0] + 255*col[1] + col[2]
 def pos_to_int(x, y):
     return x*screenh+y
@@ -21,9 +21,10 @@ def random_num(num, above, below, min_, max_):
 
 def check_in_face(pos,w,h):
     x, y = pos[0]/w,1-pos[1]/h
+    x+=0.1
 
     # eye
-    if (x <= 0.64) and (y >= -x/2+0.975) and (2*y <= 0.8+x):
+    if (x <= 0.64) and (y >= -x/2+0.95) and (2*y <= 0.8+x):
         return False
 
     # head circle
@@ -60,32 +61,57 @@ class Generator:
         self.used_positions = set()
         self.active_pixels = []
         self.finished = False
+        self.added_face = False
         self.surface = pygame.Surface((screenw, screenh))
 
         start_pixels = [#self.random_pixel()
-            Pixel(pygame.Color(0, 0, 0), 660, 320, Generator.spread_index, True),
-            Pixel(pygame.Color(255, 255, 255), 690, 320, Generator.spread_index, False),
-            Pixel(pygame.Color(255, 255, 255), 630, 320, Generator.spread_index, False),
+            # Pixel(pygame.Color(0, 0, 0), 660, 320, Generator.spread_index, True),
+            Pixel(pygame.Color(255, 255, 255), 530, 320, Generator.spread_index, False),
+            # Pixel(pygame.Color(255, 255, 255), 690, 320, Generator.spread_index, False),
             # Pixel(pygame.Color(0, 130, 250), 100, 500, Generator.spread_index),
             # Pixel(pygame.Color(250, 0, 0), 500, 500, Generator.spread_index)
             ]
-
         for pixel in start_pixels:
             self.active_pixels.append(pixel)
             self.add_pixel(pixel)
+
+    def add_face(self):
+        if not self.added_face:
+            self.added_face = True
+            start_pixels = []
+            for y in range(screenh):
+                x = screenw
+                while not check_in_face((x,y), screenw, screenh):
+                    x-=1
+                if x>0:
+                    start_pixels.append(Pixel(pygame.Color(255, 255, 255), x + 1, y, Generator.spread_index, False))
+                    start_pixels.append(Pixel(pygame.Color(0, 0, 0), x, y, Generator.spread_index, True))
+            for x in range(screenw):
+                y = screenh
+                while not check_in_face((x,y), screenw, screenh) and y>0:
+                    y-=1
+                if y>0 and y != screenh:
+                    start_pixels.append(Pixel(pygame.Color(255, 255, 255), x, y + 1, Generator.spread_index, False))
+                    start_pixels.append(Pixel(pygame.Color(0, 0, 0), x, y, Generator.spread_index, True))
+
+            for pixel in start_pixels:
+                if pos_to_int(pixel.x, pixel.y) not in self.used_positions:
+                    self.active_pixels.append(pixel)
+                    self.add_pixel(pixel)
 
     def tick(self):
         if len(self.active_pixels) > 0:
             self.complete_pass()
         elif not self.finished:
-            self.finished = True
-            temp = random.Random()
-            pygame.image.save(self.surface, f"images/image_output_{temp.randint(10000,99999)}.png")
+            self.add_face()
+            if len(self.active_pixels) == 0:
+                self.finished = True
+                temp = random.Random()
+                pygame.image.save(self.surface, f"images/image_output_{temp.randint(10000,99999)}.png")
 
     def complete_pass(self):
-
         # if random.randint(0,40) == 22:
-        #     self.active_pixels.append(self.random_pixel())
+        #     self.add_face()
 
         del_list = []
         new_pixels = []
@@ -170,10 +196,10 @@ class Generator:
 
     def pos_to_random_val(self, pos, pixel):
         if pixel.tag:
-            return 1
+            return -1
             offset = Vec(pos[0], pos[1]) - Vec(300, 300)
         else:
-            return -1
+            return 1
             offset = Vec(pos[0], pos[1]) - Vec(800, 500)
         return sum(Vec.make_from_angle(offset.angle() + 3.1 + offset.length() / 100, 1.5).tuple(True))
 
