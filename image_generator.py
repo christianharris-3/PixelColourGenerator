@@ -3,8 +3,8 @@ from Vector2 import Vec
 from UIpygame import PyUI as pyui
 
 pygame.init()
-screenw = 500
-screenh = 500
+screenw = 1000
+screenh = 1000
 screen = pygame.display.set_mode((screenw+420, screenh), pygame.RESIZABLE)
 ui = pyui.UI()
 done = False
@@ -63,9 +63,9 @@ class Generator:
         self.surface = pygame.Surface((screenw, screenh))
 
         start_pixels = [#self.random_pixel()
-            Pixel(pygame.Color(0, 0, 0), 330, 160, Generator.spread_index, True),
-            Pixel(pygame.Color(255, 255, 255), 345, 160, Generator.spread_index, False),
-            Pixel(pygame.Color(255, 255, 255), 315, 160, Generator.spread_index, False),
+            Pixel(pygame.Color(0, 0, 0), 660, 320, Generator.spread_index, True),
+            Pixel(pygame.Color(255, 255, 255), 690, 320, Generator.spread_index, False),
+            Pixel(pygame.Color(255, 255, 255), 630, 320, Generator.spread_index, False),
             # Pixel(pygame.Color(0, 130, 250), 100, 500, Generator.spread_index),
             # Pixel(pygame.Color(250, 0, 0), 500, 500, Generator.spread_index)
             ]
@@ -80,7 +80,7 @@ class Generator:
         elif not self.finished:
             self.finished = True
             temp = random.Random()
-            pygame.image.save(self.surface, f"image_output_{temp.randint(10000,99999)}.png")
+            pygame.image.save(self.surface, f"images/image_output_{temp.randint(10000,99999)}.png")
 
     def complete_pass(self):
 
@@ -170,8 +170,10 @@ class Generator:
 
     def pos_to_random_val(self, pos, pixel):
         if pixel.tag:
+            return 1
             offset = Vec(pos[0], pos[1]) - Vec(300, 300)
         else:
+            return -1
             offset = Vec(pos[0], pos[1]) - Vec(800, 500)
         return sum(Vec.make_from_angle(offset.angle() + 3.1 + offset.length() / 100, 1.5).tuple(True))
 
